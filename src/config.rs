@@ -1,29 +1,34 @@
 use fancy_regex::Regex;
-use std::{error::Error, fs};
+use std::{env, error::Error, fs};
 
 pub struct Config {
     pub unit: usize,
     pub lesson: usize,
     pub url: String,
+    pub output_dir: std::path::PathBuf,
 }
 
 impl Config {
-    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Self, &'static str> {
-        //first argument is the path
-        args.next();
+    pub fn build(args: super::Args) -> Result<Self, &'static str> {
+        if args.reset
+            && let Err(err) = fs::remove_file("urls.csv")
+        {
+            eprintln!("Unable to remove urls.csv: {err}");
+        }
 
-        let lesson = args
-            .next()
-            .ok_or("Didn't get a lesson")?
-            .parse::<usize>()
-            .map_err(|_| "Unable to parse lesson argument")?;
-
-        let unit = lesson / 25;
+        let output_dir = if let Ok(path) = env::var("OUTPUT")
+            && args.path == "output/"
+        {
+            path.into()
+        } else {
+            args.path.into()
+        };
 
         Ok(Config {
-            unit,
-            lesson,
-            url: get_url(&lesson)?,
+            lesson: args.lesson,
+            unit: args.lesson / 25,
+            url: get_url(&args.lesson)?,
+            output_dir,
         })
     }
 }
@@ -40,7 +45,7 @@ fn get_url(lesson: &usize) -> Result<String, &'static str> {
 
     for url in get_all_urls()? {
         if re.is_match(&url).unwrap() {
-            return Ok(url);
+            return Ok("https://www.howtostudykorean.com/".to_string() + &url);
         }
     }
     Err("No lesson URL found")
