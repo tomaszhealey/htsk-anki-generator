@@ -6,6 +6,7 @@ pub struct Config {
     pub lesson: usize,
     pub url: String,
     pub output_dir: std::path::PathBuf,
+    pub debug: bool,
 }
 
 impl Config {
@@ -29,6 +30,7 @@ impl Config {
             unit: args.lesson / 25,
             url: get_url(&args.lesson)?,
             output_dir,
+            debug: args.debug,
         })
     }
 }
@@ -69,7 +71,7 @@ fn get_all_urls() -> Result<Vec<String>, &'static str> {
 fn scrape_urls() -> Result<Vec<String>, Box<dyn Error>> {
     println!("Getting all urls...");
     let source = "https://www.howtostudykorean.com/";
-    let page = super::fetch_data(source.to_string() + "page.xml")?;
+    let page = super::fetch_data(&(source.to_string() + "page.xml"))?;
 
     let re = Regex::new("(?<=<loc>)https:\\S+(?=<\\/loc>)").unwrap();
     let urls = re
