@@ -61,32 +61,24 @@ struct WordType<'a> {
 impl WordType<'_> {
     fn new<'a>(page: &'a str, lesson: usize) -> Self {
         let mut markers: VecDeque<(&str, usize)> = VecDeque::new();
-        let word_types = match lesson {
-            5 => ["<p>Verbs:", "Adjectives:", "Adverbs"],
-            _ => ["Verbs:", "Adjectives:", "Adverbs"],
-        };
 
-        'outer: for mut word_type in word_types {
-            let location = if let Ok(Some(capture)) = Regex::new(&(word_type)).unwrap().find(&page)
-            {
+        let queries = TypeQuery::make_queries(lesson);
+
+        'outer: for query in queries {
+            let location = if let Ok(Some(capture)) = Regex::new(query.query).unwrap().find(&page) {
                 capture.range().start
             } else {
                 usize::MAX
             };
 
-            word_type = word_type
-                .strip_prefix("<p>")
-                .unwrap_or(word_type)
-                .strip_suffix("s:")
-                .unwrap_or("Other");
-
+            //So `markers` is in ascending order
             for (index, item) in markers.iter().enumerate() {
                 if item.1 > location {
-                    markers.insert(index, (word_type, location));
+                    markers.insert(index, (query.id, location));
                     continue 'outer;
                 }
             }
-            markers.push_back((word_type, location));
+            markers.push_back((query.id, location));
         }
 
         WordType {
@@ -99,6 +91,43 @@ impl WordType<'_> {
     fn advance(&mut self) {
         self.name = self.markers.pop_front().unwrap().0;
         self.next_location = self.markers.get(0).unwrap_or(&("Empty", usize::MAX)).1;
+    }
+}
+
+struct TypeQuery<'a> {
+    id: &'a str,
+    query: &'a str,
+}
+
+impl TypeQuery<'_> {
+    fn make_queries<'a>(lesson: usize) -> Vec<TypeQuery<'a>> {
+        let mut queries = Vec::new();
+        queries.push(TypeQuery::new(
+            "Verb",
+            match lesson {
+                5 => "<p>Verbs:",
+                _ => "Verbs:",
+            },
+        ));
+        queries.push(TypeQuery::new(
+            "Adjective",
+            match lesson {
+                _ => "Adjectives:",
+            },
+        ));
+        queries.push(TypeQuery::new(
+            "Other",
+            match lesson {
+                8 => "Adverbs:",
+                _ => "Adverbs",
+            },
+        ));
+
+        queries
+    }
+
+    fn new<'a>(id: &'a str, query: &'a str) -> TypeQuery<'a> {
+        TypeQuery { id, query }
     }
 }
 
