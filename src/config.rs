@@ -27,7 +27,7 @@ impl Config {
 
         Ok(Config {
             lesson: args.lesson,
-            unit: args.lesson / 25,
+            unit: (args.lesson / 25) + 1,
             url: get_url(&args.lesson)?,
             output_dir,
             debug: args.debug,

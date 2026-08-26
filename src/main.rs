@@ -106,12 +106,14 @@ impl TypeQuery<'_> {
             "Verb",
             match lesson {
                 5 => "<p>Verbs:",
+                7 | 11 | 12 => "Verbs",
                 _ => "Verbs:",
             },
         ));
         queries.push(TypeQuery::new(
             "Adjective",
             match lesson {
+                7 | 11 | 12 => "Adjectives",
                 _ => "Adjectives:",
             },
         ));
@@ -189,7 +191,7 @@ fn write_notes(vocab: &Vec<(&str, &str, &str)>, config: &Config) -> Result<(), B
     let (unit, lesson) = (config.unit, config.lesson);
     for (category, kr, en) in vocab {
         deck.push_str(&format!(
-            "{en}\t{kr}\tHTSK::Unit {unit}::{category}s\thtsk::unit-{unit}::lesson-{lesson} {}\n",
+            "{en}\t{kr}\tHTSK::{category}s\thtsk::unit-{unit}::lesson-{lesson} {}\n",
             category.to_lowercase()
         ));
     }
@@ -220,21 +222,21 @@ fn match_extras<'a>(
     //Will return if the lesson doesn't have any specially categorised vocabulary
     let check_max = match config.lesson {
         5 => false,
-        10 => true,
+        10 | 11 => true,
         _ => return vocab,
     };
 
     println!(
-        "\x1b[93mGetting extras...\nThis lesson may require you to delete notes which are not vocab!\x1b[0m"
+        "\x1b[93mGetting extras...\nThis lesson may require you to alter notes or delete notes which are not vocab!\x1b[0m"
     );
 
-    let re = Regex::new("<a\\N+mp3\">(\\N+)<\\/a> = (\\D+?)<(?:br \\/|\\/p)>").unwrap();
+    let re = Regex::new("<a\\N+mp3\">(\\N+)<\\/a>\\N+= (\\D+?)<(?:br \\/|\\/p)>").unwrap();
     for capture in re.captures_iter(page).map(|c| c.unwrap()) {
         let cap = capture.get(0).unwrap();
 
         if check_max && max < cap.range().start {
             break;
-        } else if !cap.as_str().contains("&amp") && cap.as_str().contains("Lesson") {
+        } else if !cap.as_str().contains("&amp") && (check_max || cap.as_str().contains("Lesson")) {
             add_vocab(&mut vocab, capture, "Other", config.debug);
         }
     }
