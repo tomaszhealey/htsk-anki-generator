@@ -106,14 +106,15 @@ impl TypeQuery<'_> {
             "Verb",
             match lesson {
                 5 => "<p>Verbs:",
-                7 | 11 | 12 => "Verbs",
+                15 => ">Verbs",
+                7 | 11 | 12 | 16 => "Verbs",
                 _ => "Verbs:",
             },
         ));
         queries.push(TypeQuery::new(
             "Adjective",
             match lesson {
-                7 | 11 | 12 => "Adjectives",
+                7 | 11 | 12 | 15 => "Adjectives",
                 _ => "Adjectives:",
             },
         ));
@@ -143,7 +144,7 @@ fn add_vocab<'a>(
         .map(|i| capture.get(i).unwrap().as_str())
         .collect::<Vec<_>>();
 
-    if captures[0].len() < 20 && captures[1].len() < 40 {
+    if captures[0].len() < 20 && captures[1].len() < 50 {
         vocab.push((word_type, captures[0], captures[1]));
     } else if debug {
         println!("Rejected {captures:?}");
@@ -222,7 +223,7 @@ fn match_extras<'a>(
     //Will return if the lesson doesn't have any specially categorised vocabulary
     let check_max = match config.lesson {
         5 => false,
-        10 | 11 => true,
+        10 | 11 | 16 => true,
         _ => return vocab,
     };
 
