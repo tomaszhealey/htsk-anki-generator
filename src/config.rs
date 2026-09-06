@@ -7,6 +7,7 @@ pub struct Config {
     pub url: String,
     pub output_dir: std::path::PathBuf,
     pub debug: bool,
+    pub invert: bool,
 }
 
 impl Config {
@@ -31,6 +32,7 @@ impl Config {
             url: get_url(&args.lesson)?,
             output_dir,
             debug: args.debug,
+            invert: args.invert,
         })
     }
 }

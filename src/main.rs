@@ -19,6 +19,10 @@ struct Args {
     reset: bool,
     #[arg(short = 'd', long = "debug", default_value_t = false)]
     debug: bool,
+    ///Inverts the cards so the front is korean and the back is english. Also changes the deck to
+    ///be Inverted::HTSK::...
+    #[arg(short = 'i', long = "invert", default_value_t = false)]
+    invert: bool,
 }
 
 fn main() {
@@ -181,29 +185,51 @@ fn make_anki(config: Config) -> Result<(), Box<dyn Error>> {
 
 fn write_notes(vocab: &Vec<(&str, &str, &str)>, config: &Config) -> Result<(), Box<dyn Error>> {
     println!("Making deck...");
-    let mut deck = String::from(
+
+    let note_type = if config.invert {
+        "Basic"
+    } else {
+        "Basic (type in the answer)"
+    };
+
+    let mut deck = format!(
         "#separator:tab
 #html:true
 #deck column:3
 #tags column:4
-#notetype:Basic (type in the answer)\n\n",
+#notetype:{}\n\n",
+        note_type
     );
 
+    let make_card = if config.invert {
+        |(category, kr, en): &(&str, &str, &str), unit: usize, lesson: usize| {
+            format!(
+                "{kr}\t{en}\tInverted::HTSK::{category}s\ten-to-kr::htsk::unit-{unit}::lesson-{lesson} en-to-kr::{}\n",
+                category.to_lowercase()
+            )
+        }
+    } else {
+        |(category, kr, en): &(&str, &str, &str), unit: usize, lesson: usize| {
+            format!(
+                "{en}\t{kr}\tHTSK::{category}s\tkr-to-en::htsk::unit-{unit}::lesson-{lesson} kr-to-en::{}\n",
+                category.to_lowercase()
+            )
+        }
+    };
+
     let (unit, lesson) = (config.unit, config.lesson);
-    for (category, kr, en) in vocab {
-        deck.push_str(&format!(
-            "{en}\t{kr}\tHTSK::{category}s\thtsk::unit-{unit}::lesson-{lesson} {}\n",
-            category.to_lowercase()
-        ));
+    for info in vocab {
+        deck.push_str(&make_card(info, unit, lesson));
     }
 
     if !fs::exists(&config.output_dir).unwrap() {
         fs::create_dir(&config.output_dir)?;
     }
 
+    let preffix = if config.invert { "Inverted-" } else { "" };
     let dir = config
         .output_dir
-        .join(format!("Unit-{unit}-Lesson-{}", config.lesson) + ".txt");
+        .join(format!("{preffix}Unit-{unit}-Lesson-{}", config.lesson) + ".txt");
     std::fs::write(&dir, deck)?;
     println!("Created deck at \"{}\"", dir.to_str().unwrap());
 
