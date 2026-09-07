@@ -110,7 +110,7 @@ impl TypeQuery<'_> {
             "Verb",
             match lesson {
                 5 => "<p>Verbs:",
-                15 => ">Verbs",
+                15 | 17 => ">Verbs",
                 7 | 11 | 12 | 16 => "Verbs",
                 _ => "Verbs:",
             },
@@ -118,7 +118,7 @@ impl TypeQuery<'_> {
         queries.push(TypeQuery::new(
             "Adjective",
             match lesson {
-                7 | 11 | 12 | 15 => "Adjectives",
+                7 | 11 | 12 | 15 | 17 => "Adjectives",
                 _ => "Adjectives:",
             },
         ));
@@ -248,7 +248,7 @@ fn match_extras<'a>(
     //match statement
     //Will return if the lesson doesn't have any specially categorised vocabulary
     let check_max = match config.lesson {
-        5 => false,
+        5 | 17 => false,
         10 | 11 | 16 => true,
         _ => return vocab,
     };
