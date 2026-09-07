@@ -204,14 +204,14 @@ fn write_notes(vocab: &Vec<(&str, &str, &str)>, config: &Config) -> Result<(), B
     let make_card = if config.invert {
         |(category, kr, en): &(&str, &str, &str), unit: usize, lesson: usize| {
             format!(
-                "{kr}\t{en}\tInverted::HTSK::{category}s\ten-to-kr::htsk::unit-{unit}::lesson-{lesson} en-to-kr::{}\n",
+                "{kr}\t{en}\tInverted::HTSK::{category}s\tkr-to-en::htsk::unit-{unit}::lesson-{lesson} kr-to-en::{}\n",
                 category.to_lowercase()
             )
         }
     } else {
         |(category, kr, en): &(&str, &str, &str), unit: usize, lesson: usize| {
             format!(
-                "{en}\t{kr}\tHTSK::{category}s\tkr-to-en::htsk::unit-{unit}::lesson-{lesson} kr-to-en::{}\n",
+                "{en}\t{kr}\tHTSK::{category}s\ten-to-kr::htsk::unit-{unit}::lesson-{lesson} en-to-kr::{}\n",
                 category.to_lowercase()
             )
         }
