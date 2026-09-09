@@ -110,7 +110,7 @@ impl TypeQuery<'_> {
             "Verb",
             match lesson {
                 5 => "<p>Verbs:",
-                15 | 17 => ">Verbs",
+                15 | 17 | 18 => ">Verbs",
                 7 | 11 | 12 | 16 => "Verbs",
                 _ => "Verbs:",
             },
@@ -118,6 +118,7 @@ impl TypeQuery<'_> {
         queries.push(TypeQuery::new(
             "Adjective",
             match lesson {
+                18 => ">Adjectives",
                 7 | 11 | 12 | 15 | 17 => "Adjectives",
                 _ => "Adjectives:",
             },
